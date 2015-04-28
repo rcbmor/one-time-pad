@@ -1,0 +1,210 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\newcommand*\xor{\mathbin{\oplus}}
+
+\title{Cryptography Coursework 2 - One-Time Pad}
+\author{ricardo.moreira@acad.pucrs.br }
+\date{April 28, 2015}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper describes the cryptanalysis of One-Time Pad cipher for the Cryptography course classwork n.o 2. A basic explanation on how One-Time Pad cipher works and how the sample ciphers could be braked.
+\end{abstract}
+
+\section{Introduction}
+
+The One-Time Pad cipher is unbreakable if used correctly. The key should be random and they were printed on pads of paper that could be torn off after use so that each key would be used only once. Although unbreakable there are some practical problems that prevented it from being widely used.
+
+\section{One-Time Pad}
+
+A one-time pad (OTP) was first described by Gilbert Vernam in 1917 for use in automatic encryption and decryption of telegraph messages \cite{menezes:1996}.
+
+The Vernam Cipher is a stream cipher defined on the alphabet $ A = \left\{0, 1\right\}$. A binary message $m_1m_2$ \dots $m_t$ is operated on by a binary key string $k_1k_2$ \dots $k_t$ of the same length to produce a ciphertext string $c_1c_2$ \dots $c_t$ where:
+\begin{eqnarray}
+c_i = m_i \xor k_i , 1 \leq i \leq t
+\end{eqnarray}
+
+If the key string is randomly chosen and never used again, the Vernam cipher is called a one-time pad.
+
+\begin{table}[!htb]
+ \centering
+  \begin{tabular}{ l | l }
+    \hline
+    Plain:  & 0 1 1 0 1 1 1 \\ \hline
+    Key:    & 1 0 1 1 0 1 0 \\ \hline
+    Cipher: & 1 1 0 1 1 0 1 \\ \hline
+  \end{tabular}
+ \caption{Example of OTP cipher.}\label{tab:otp1}
+\end{table}
+
+OTP is an encryption technique that cannot be cracked if used correctly used:
+\begin{enumerate}
+  \item key is truly random
+  \item key is used only one-time
+  \item key is as long as the message
+\end{enumerate}
+
+When a truly random key is combined with a plaintext, the result is a truly random ciphertext. To find key or plaintext, an adversary only has the random ciphertext at his disposal.
+
+Shannon's definition of perfect secrecy states that a ciphertext should reveal no information about plaintext. A cipher $(E, D)$ over $(K, M, C)$ has a perfect secrecy if:
+\begin{eqnarray}
+\label{eq:psec}
+\forall m_0, m_1 \in M(len(m_0) = len(m_1)) \land \forall c \in C \nonumber \\
+Prob( E(k, m_0)  = c ) = Prob( E(k, m_1) = c ) \nonumber
+\end{eqnarray}
+
+The theorem of perfect secrecy requires that $|K| >= |M|$. Key must be at least as big as the message length which is one of the problems of OTP to be widely use.
+
+As an example, lets assign each letter a numerical value: "A" is 0, "B" is 1, and so on. In the example on tables below, the technique is to combine the key and the message using modular addition. The numerical values of corresponding message and key letters are added together, modulo 26.
+
+\begin{table}[!htp]
+ \centering
+ \label{ex1}
+  \begin{tabular}{r r l l l l l}
+  \\ \hline
+Message: &   &  H &  E &  L &  L &  O \\
+         &   &  7 &  4 & 11 & 11 & 14 \\ \hline
+ Key:    &   &  X &  M &  C &  K &  L \\
+         & + & 23 & 12 &  2 & 10 & 11 \\ \hline
+         & = & 30 & 16 & 13 & 21 & 25 \\
+ mod 26  & = &  4 & 16 & 13 & 21 & 25 \\
+Ciphertext: &&  E &  Q &  N &  V &  Z \\ \hline
+  \end{tabular}
+ \caption{One-time pad example encrypt.}
+\end{table}
+
+\begin{table}[!htp]
+ \centering
+ \label{ex2}
+  \begin{tabular}{r r l l l l l}
+  \\ \hline
+Ciphertext: &&   E &  Q &  N &  V &  Z \\
+         & = &   4 & 16 & 13 & 21 & 25 \\ \hline
+ Key:    &   &   X &  M &  C &  K &  L \\
+         & - &  23 & 12 &  2 & 10 & 11 \\ \hline
+         & = & -19 &  4 & 11 & 11 & 14 \\
+ mod 26: &   &   7 &  4 & 11 & 11 & 14 \\
+Message: &   &   H &  E &  L &  L &  O \\ \hline
+   \end{tabular}
+ \caption{One-time pad example decrypt.}
+\end{table}
+
+To demonstrate that given a ciphertext, an adversary cannot distinguish if message is $m_0$ or $m_1$, with enough computation power we could find that the key "XMCKL" produces the plaintext "HELLO", but also that  the key "TQURI" would produce the plaintext "LATER", an equally plausible message:
+
+\begin{table}[!htp]
+ \centering
+ \label{ex3}
+  \begin{tabular}{r r l l l l l}
+  \\ \hline
+Ciphertext: &&   E &  Q &  N &  V &  Z \\
+         & = &   4 & 16 & 13 & 21 & 25 \\ \hline
+ Key:    &   &   T &  Q &  U &  R &  I \\
+         & - &  19 & 16 & 20 & 17 &  8 \\ \hline
+         & = & -15 &  0 & -7 &  4 & 17 \\
+ mod 26: &   &  11 &  0 & 19 &  4 & 17 \\
+Message: &   &   L &  A &  T &  E &  R \\ \hline
+   \end{tabular}
+ \caption{One-time pad example of multiple keys producing valid messages.}
+\end{table}
+
+\section{How to attack OTP}
+
+If the key string is reused there are ways to attack the system. For example if $c_1c_2$\dots$c_t$ and $c'_1c'_2$\dots$c'_t$ are two ciphertext strings produced by the same key string $k_1k_2$\dots$k_t$ then:
+\begin{eqnarray}
+\label{eqprop}
+c_i = m_i \xor k_i
+\textnormal{ , }
+c'_i = m'_i \xor k_i
+\textnormal{ and }
+c_i \xor c'_i = m_i \xor m'_i
+\end{eqnarray}
+
+Know, lets consider what happens when we $\xor$ a letter character with ''spaces'': $'A'\xor\textnormal{'   '}='a'$ and $'a'\xor\textnormal{'   '}='A'$. If we combine this behavior with the property expressed in equation \ref{eqprop} we can explore the ciphers to find letter characters from the $\xor$ operation. Every time we find a valid letter we have only two options:
+\begin{itemize}
+\item The plaintext character is a space ' '.
+\item The plaintext character is the opposite case: $'a' \rightarrow 'A'$ or $'A'\rightarrow 'a'$.
+\end{itemize}
+
+This knowledge allows to calculate the probability of each letter considering the result of the $\xor$ operation between the know ciphers. This is only valid if we hold the assumption that the ciphertexts were encrypted with the same key. We basically create a probability array measuring the result of $\xor$ operations on ciphertexts.
+
+Let's consider just the first letters of the 9 sample ciphertexts from the classwork: $0x39$ $0x4D$ $0x56$ $0x50$ $0x4D$ $0x5C$ $0x5A$ $0x50$ $0x5C$. If we $\xor$ each character with each other cipher to compute the probability of each character at the given position. The valid letters we find and their frequency are presented in table \ref{probt}. The result characters are: ' ', 'T', 'O', 'I', 'T', 'E', 'C', 'I', 'E'.
+
+\begin{table}[!htp]
+ \centering
+ \label{probt}
+  \begin{tabular}{r c l}
+  \\ \hline
+  Cipher  & Letter frequency & Result \\ \hline
+   0 & {' ': 8, 'E': 2, 'I': 2, 'T': 2, 'C': 1, 'O': 1} & ' ' \\ \hline
+   1 & {' ': 1, 'T': 1} & 'T' \\ \hline
+   2 & {' ': 1, 'O': 1} & 'O' \\ \hline
+   3 & {' ': 1, 'I': 1} & 'I' \\ \hline
+   4 & {' ': 1, 'T': 1} & 'T' \\ \hline
+   5 & {' ': 1, 'E': 1} & 'E' \\ \hline
+   6 & {' ': 1, 'C': 1} & 'C' \\ \hline
+   7 & {' ': 1, 'I': 1} & 'I' \\ \hline
+   8 & {' ': 1, 'E': 1} & 'E' \\ \hline
+   \end{tabular}
+ \caption{Probability for the first letter.}
+\end{table}
+
+By following this approach we can find the majority of letters from the original plaintext as presented in appendix \ref{App:AppendixB}. To find the key, we can use the property $ k = m \xor c $.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{1}
+
+\bibitem{wiki:otp} One-time pad {\emph{One-time pad --- Wikipedia{,} The Free Encyclopedia},  Online; accessed 28-April-2015, 2015.
+
+\bibitem{stinson:1995} Cryptography: Theory and Practice, Stinson, Douglas R., CRC Press, Inc., 1995.
+
+\bibitem{menezes:1996} Handbook of Applied Cryptography,
+ Alfred J. Menezes and Paul C. Van Oorschot and Scott A. Vanstone and R. L. Rivest,
+ CRC Press, Inc.
+ 1996
+}
+
+\end{thebibliography}
+
+\newpage
+\appendix
+\section{\\Coursework 2 ciphertexts } \label{App:AppendixA}
+\tiny
+\begin{verbatim}
+3939252352554c5f51592621294d5c5229382f5d454b485d4554413132275458482d3157415046495c5b2a435a46543527364d5059394847382a2b4b555746404a38202d4c525652455c2a
+
+4d514c503134405f305f4e44292c41534a57414f2c2c2d4054544d5f552741424c5931345f415d2c2e4d4454405e504142522e31424a434c5f2a2b415a412f585a55452d2e20394941562a
+
+56574023455d4449305b4745295b5b5a45385f59435a44574526453132445c5a454843404d585a2c4146464e3246544146554531445c49574a435f573a
+
+505725575951292c53594f515d435544484847522c2c4e5f4155575441274c45582d465d444c2e404b495859324f4f4227424131545644444d594e2e554a4b2c4757204947465f4c53572a
+
+4d5625565f504c5e435f474f4d2c565f5a5b5d4e58492d4352494650504e59435954315d5b2047415e4758435349543553592e44595d4f504b5e4a4050244c5e4a48544249525849484b2a
+
+5c57424f5847412c5c4e52554c5e41364f4a4a5a594943505926455d5e4842592d545e412854412c4c5a4f565927565c40534054455c2a43564e2b4d55415c4d413843445e485c4b533c
+
+5a4b5c53455b4e5e515b4e5829454136594a4a584942593349482442575150584c413150414648495c4d44433253594542452e5e51394b524846424d555046435d4b20434157585d414b5722
+
+505f255a5e41294a5f5e484529585a532957414e2c58445e45265450562b355e45485f34514f5b2c46495c523241495b4e45465453395e4a51592b2e574b5a5e405d57425c4b37
+5c6f607168346a607f7e6221616d613668387c62607a6861206a6d7f7b697224
+
+\end{verbatim}
+
+\section{\\Coursework 2 decrypted ciphertext} \label{App:AppendixB}
+\scriptsize
+\begin{verbatim}
+    CAESA?   A?D   ?IGENERE   A?E  CIPHER? ?HA?   CA? B?   EOSIL?   BR ????
+THIS  IS ?HE  ?ECON?   STRING TFAT  WAS  ?N?RY?TED  ?SI?G  O?E T?ME    ??J?
+ONE TIME ?AD W?LL P?OVIDE A   I?HERTEXT O?L? A?TACK ?EC?RITY
+IN THE  C?IPTO?RAPH?  CLASSES YAU WILL LE?R? H?W TO ?ON?USE OND ?O DIF ??K?
+TO UNDERS?AND ?ISCR?TE PROBAB LGTY IS IMP?R?AN? TO U?DE?STANJ CR?PTOGR ??W?
+ENGLISH L?TTER? FRE?UENCY ALL W? YOU TO B?E?K ?IGENE?E ?ND COESA? CIPH ??
+CRYPTOGRA?HY I? PRE?ENT IN SE E?AL DIFFER?N? T?PES O? A?PLICOTIO?S NOW ??W??
+IF YOU FO?ND T?E ON? TIME PAD  ZHEN YOU H?V? F?NISHE? T?IS  MOUR?EWORK
+Every clo?d ha? a s?lver lini g
+\end{verbatim}
+
+\end{document}
